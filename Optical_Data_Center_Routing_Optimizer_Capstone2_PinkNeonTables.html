@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Optical Data Center Routing Optimizer | Capstone 2</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#17243a;--muted:#63718a;--blue:#2459d3;--teal:#078779;--line:#dce4ef;--red:#c44747}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(120deg,#10284c,#2459d3);color:white;padding:28px max(18px,calc((100vw - 1180px)/2))}
+header h1{margin:0 0 7px;font-size:clamp(23px,4vw,34px)}header p{margin:0;color:#dbe8ff;max-width:850px}
+main{max-width:1180px;margin:20px auto;padding:0 16px 40px}.notice{background:#eaf2ff;border:1px solid #cbdcff;padding:12px 14px;border-radius:12px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:15px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:0 5px 18px #182d4d0a}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:12px 0 7px}.muted{color:var(--muted);font-size:13px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}select,input,button{font:inherit;border:1px solid #cbd5e3;border-radius:9px;padding:9px 10px;background:white;color:var(--ink)}select,input{min-width:110px}button{cursor:pointer;background:var(--blue);color:white;border-color:var(--blue);font-weight:600}button.secondary{background:white;color:var(--ink);border-color:#cbd5e3}button.danger{background:#fff;color:var(--red);border-color:#efc8c8}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{background:#f7f9fd;border:1px solid var(--line);padding:12px;border-radius:11px}.stat strong{display:block;font-size:21px}.stat small{color:var(--muted)}
+table{width:100%;border-collapse:separate;border-spacing:0 4px;font-size:13px}th,td{padding:9px 8px;text-align:left;border-top:1px solid #dce4ef;border-bottom:1px solid #dce4ef;background:#fff}th{color:var(--muted);font-weight:600;background:#f2f6ff}tbody tr,.matrix-row{transition:transform .22s ease,filter .22s ease}tbody tr:hover{transform:translateX(3px);filter:drop-shadow(0 0 7px #55d6ff88)}tbody tr td:first-child{border-left:3px solid #24c8ef;border-radius:8px 0 0 8px}tbody tr td:last-child{border-right:1px solid #dce4ef;border-radius:0 8px 8px 0}code{background:#eef2f8;padding:2px 5px;border-radius:5px}.result{padding:12px;background:#f5f8ff;border:1px solid #d8e4ff;border-radius:10px;margin-top:10px}.good{color:var(--teal);font-weight:700}.bad{color:var(--red);font-weight:700}
+#network{width:100%;height:360px;background:radial-gradient(ellipse at 50% 40%,#14284b,#080f22 78%);border:1px solid #4256a8;border-radius:14px;box-shadow:0 0 12px #355dff44,inset 0 0 24px #1b4b8c55;animation:panelGlow 5s ease-in-out infinite alternate;touch-action:none}svg text{font-family:system-ui,sans-serif}#network .edge{transition:stroke .25s,stroke-width .25s;cursor:pointer}#network .edge:hover{stroke:#fff!important;stroke-width:5!important;filter:drop-shadow(0 0 5px #66eaff)}#network .route-link{stroke-dasharray:9 7;animation:routeFlow 1s linear infinite;filter:drop-shadow(0 0 4px #36f1c0)}#network .failed-link{animation:failedPulse 1.1s ease-in-out infinite alternate}#network .node{cursor:grab;transform-box:fill-box;transform-origin:center;transition:filter .2s}#network .node:hover{filter:drop-shadow(0 0 8px #5fe8ff);transform:scale(1.12)}#network .node:active{cursor:grabbing}#network .node-label{pointer-events:none;paint-order:stroke;stroke:#081329;stroke-width:3;stroke-linejoin:round} .panel{transition:transform .25s ease,box-shadow .3s ease,border-color .3s;position:relative;isolation:isolate}.panel:hover{transform:translateY(-2px);box-shadow:0 10px 28px #2855bb20;border-color:#80b9ff}.panel h2{background:linear-gradient(90deg,#1d4ed8,#06b6d4,#8b5cf6,#1d4ed8);background-size:250% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:headingShimmer 8s linear infinite}.stat{border:1px solid transparent;background:linear-gradient(#f7f9fd,#f7f9fd) padding-box,linear-gradient(120deg,#38bdf8,#818cf8,#2dd4bf,#38bdf8) border-box;background-size:100% 100%,250% 250%;animation:borderFlow 6s linear infinite;transition:transform .2s}.stat:hover{transform:translateY(-3px) scale(1.02)}#failureOptions{box-shadow:inset 0 0 12px #38bdf822}#failureOptions label{padding:6px;border-radius:7px;border:1px solid #a5b4fc55;transition:all .2s}#failureOptions label:has(input:checked){background:#fee2e222;border-color:#fb7185;box-shadow:0 0 10px #fb718555}#matrix table td{min-width:55px;text-align:center;transition:background .2s,color .2s}#matrix table td:hover{background:#dbeafe;color:#1d4ed8}#centers table tbody tr:nth-child(odd) td,#links tr:nth-child(odd) td{background:#f7faff}#links tr:has(.bad) td{background:#fff1f2;border-top-color:#fb7185;border-bottom-color:#fb7185}button{transition:transform .18s,box-shadow .18s,filter .18s}button:hover{transform:translateY(-2px);box-shadow:0 0 14px #3b82f666;filter:brightness(1.06)}button:active{transform:scale(.97)}@keyframes routeFlow{to{stroke-dashoffset:-32}}@keyframes failedPulse{from{filter:drop-shadow(0 0 1px #fb7185);opacity:.65}to{filter:drop-shadow(0 0 7px #fb7185);opacity:1}}@keyframes panelGlow{from{box-shadow:0 0 9px #355dff33,inset 0 0 18px #1b4b8c33}to{box-shadow:0 0 22px #06b6d466,inset 0 0 26px #1b4b8c66}}@keyframes headingShimmer{to{background-position:250% 0}}@keyframes borderFlow{to{background-position:0 0,250% 250%}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+
+/* CAPSTONE 2: high-energy neon data tables */
+table{border-collapse:separate;border-spacing:0 7px;font-size:13px;isolation:isolate}
+thead th,table>tbody>tr>th,table>tr>th{position:sticky;top:0;z-index:2;color:#dffaff;background:linear-gradient(115deg,#101a3b,#172b55 45%,#25184d);letter-spacing:.055em;text-transform:uppercase;font-size:10px;font-weight:800;border-top:1px solid #39e7ff;border-bottom:1px solid #8b5cf6;box-shadow:inset 0 1px 0 #ffffff14,0 3px 12px #334cff25}
+thead th:first-child{border-radius:10px 0 0 10px;border-left:1px solid #39e7ff}thead th:last-child{border-radius:0 10px 10px 0;border-right:1px solid #8b5cf6}
+td,table>tbody>tr>th,table>tr>th{position:relative;color:#e3edff;background:linear-gradient(110deg,#0c1530,#111e3d 55%,#171638);border-top:1px solid #344a83;border-bottom:1px solid #334b87;box-shadow:inset 0 1px 0 #ffffff08;transition:background .25s,color .25s,border-color .25s,transform .25s,box-shadow .25s}
+tbody tr td:first-child{border-left:2px solid #22d3ee;border-radius:9px 0 0 9px}
+tbody tr td:last-child{border-right:1px solid #8b5cf6;border-radius:0 9px 9px 0}
+tbody tr{filter:drop-shadow(0 3px 5px #080f2530);transition:transform .25s,filter .25s}
+tbody tr:hover{transform:translateY(-2px) scale(1.004);filter:drop-shadow(0 0 8px #22d3ee55) drop-shadow(0 0 13px #8b5cf633)}
+tbody tr:hover td{color:#fff;background:linear-gradient(105deg,#123052,#19284d 55%,#302052);border-top-color:#39e7ff;border-bottom-color:#a78bfa;box-shadow:inset 0 0 18px #22d3ee0d,0 0 9px #22d3ee12}
+tbody tr:nth-child(even) td{background:linear-gradient(105deg,#101a36,#111d38 55%,#191735)}
+#centers table{border-spacing:0 5px}#centers table td:first-child{font-weight:800;color:#67e8f9}
+#matrix table{border-spacing:3px;min-width:max-content}#matrix table th,#matrix table td{min-width:54px;text-align:center;border:1px solid #344b83;border-radius:6px;padding:8px 6px;background:linear-gradient(145deg,#111a38,#172345);font-variant-numeric:tabular-nums}
+#matrix table tr:first-child th{color:#a5f3fc;background:linear-gradient(135deg,#123454,#25205a);border-color:#22d3ee;box-shadow:0 0 8px #22d3ee20}
+#matrix table tr th:first-child{color:#c4b5fd;border-color:#8b5cf6}
+#matrix table td:hover{color:#fff!important;background:linear-gradient(135deg,#075985,#4338ca)!important;border-color:#67e8f9!important;box-shadow:0 0 12px #22d3ee88,inset 0 0 12px #ffffff13;transform:scale(1.08);z-index:3}
+#links tr:has(.bad) td{color:#ffe4ec;background:linear-gradient(100deg,#45172d,#29182f);border-top-color:#fb7185;border-bottom-color:#fb7185;box-shadow:inset 0 0 14px #fb71851a}
+#links .good{display:inline-block;color:#6affd8;background:#063b3a;border:1px solid #14b8a6;padding:3px 9px;border-radius:999px;box-shadow:0 0 10px #14b8a633;letter-spacing:.04em;font-size:11px}
+#links .bad{display:inline-block;color:#fecdd3;background:#4c1026;border:1px solid #fb7185;padding:3px 9px;border-radius:999px;box-shadow:0 0 12px #fb718566;letter-spacing:.04em;font-size:11px;animation:statusPulse 1.4s ease-in-out infinite alternate}
+#links td:first-child{font-weight:850;color:#67e8f9;letter-spacing:.04em}
+@keyframes statusPulse{from{box-shadow:0 0 5px #fb718533}to{box-shadow:0 0 15px #fb7185aa}}
+@media(max-width:600px){table{font-size:12px}th,td{padding:9px 10px;white-space:nowrap}#matrix table th,#matrix table td{min-width:48px;padding:8px 5px}}
+
+
+/* EXTRA TABLE FX: animated rainbow rails, shimmer sweeps and vivid matrix cells */
+.panel:has(table) h3{color:#e0f2fe;text-shadow:0 0 10px #22d3ee66}
+#centers,#matrix,.panel>div[style*="overflow:auto"]{position:relative;border-radius:15px}
+#centers table,#matrix table,#links table{border-spacing:0 7px;padding:5px;}
+#centers table thead th,#centers table tr:first-child th,#matrix table tr:first-child th,#links thead th{
+ background:linear-gradient(110deg,#10204b,#183c67,#3a1c61,#10204b);background-size:260% 100%;animation:tableHeaderTravel 5s linear infinite;
+ color:#f0fdff;text-shadow:0 0 9px #67e8f9a6;border-top:1px solid #67e8f9;border-bottom:1px solid #c084fc;box-shadow:inset 0 0 15px #38bdf822,0 4px 18px #8b5cf633
+}
+#centers table tbody tr,#links tbody tr{position:relative;animation:rowArrive .55s both;}
+#centers table tbody tr:nth-child(1),#links tbody tr:nth-child(1){animation-delay:.02s}
+#centers table tbody tr:nth-child(2),#links tbody tr:nth-child(2){animation-delay:.04s}
+#centers table tbody tr:nth-child(3),#links tbody tr:nth-child(3){animation-delay:.06s}
+#centers table tbody tr:nth-child(4),#links tbody tr:nth-child(4){animation-delay:.08s}
+#centers table tbody tr:nth-child(5),#links tbody tr:nth-child(5){animation-delay:.10s}
+#centers table tbody tr:nth-child(n+6),#links tbody tr:nth-child(n+6){animation-delay:.12s}
+#centers table td,#links table td{background:linear-gradient(115deg,#0c1732,#122749 42%,#20183e 75%,#10233a);background-size:220% 100%;border-top-color:#2dd4bf77;border-bottom-color:#818cf877;box-shadow:inset 0 0 14px #6366f10c;}
+#centers table tbody tr:nth-child(even) td,#links tbody tr:nth-child(even) td{background:linear-gradient(115deg,#15143a,#102c48 48%,#24204b);background-size:220% 100%}
+#centers table tbody tr:hover td,#links tbody tr:hover td{animation:cellRainbow .9s linear infinite alternate;background:linear-gradient(105deg,#164e63,#312e81,#701a75,#164e63);background-size:300% 100%;border-color:#67e8f9;box-shadow:0 0 14px #22d3ee66,inset 0 0 15px #c084fc20;color:#fff}
+#matrix{border:1px solid #334e9b;background:radial-gradient(ellipse at top left,#172c56,#080f24 70%);box-shadow:inset 0 0 24px #6366f122,0 0 16px #4f46e533;padding:7px}
+#matrix table{border-spacing:4px;}
+#matrix table th,#matrix table td{position:relative;overflow:hidden;border:1px solid #45619d;border-radius:7px;transition:transform .22s,filter .22s,box-shadow .22s;animation:matrixTwinkle 4.5s ease-in-out infinite alternate;}
+#matrix table td:nth-child(3n){animation-delay:.6s}#matrix table td:nth-child(4n){animation-delay:1.1s}#matrix table td:nth-child(5n){animation-delay:1.7s}
+#matrix table td:nth-child(4n+1){background:linear-gradient(140deg,#102e51,#163d55);border-color:#22d3ee66}
+#matrix table td:nth-child(4n+2){background:linear-gradient(140deg,#211b50,#34235e);border-color:#a78bfa77}
+#matrix table td:nth-child(4n+3){background:linear-gradient(140deg,#103e3c,#174b55);border-color:#2dd4bf77}
+#matrix table td:nth-child(4n){background:linear-gradient(140deg,#45203c,#30204f);border-color:#f472b677}
+#matrix table td:hover{z-index:5;transform:translateY(-3px) scale(1.13) rotate(-1deg);filter:brightness(1.45);box-shadow:0 0 8px #fff,0 0 18px #22d3ee,0 0 27px #a855f7!important;animation:none}
+#matrix table th:first-child{background:linear-gradient(140deg,#312e81,#701a75);color:#f5d0fe;border-color:#e879f9;box-shadow:0 0 12px #c026d355}
+#matrix table td:first-of-type{font-weight:700}
+#links .good{animation:activeGlow 2s ease-in-out infinite alternate}
+#links .bad{animation:dangerGlow .8s ease-in-out infinite alternate}
+#links tbody tr:has(.bad){animation:failureFlash 1.3s ease-in-out infinite alternate}
+#links tbody tr:has(.bad) td{border-color:#fb7185!important;box-shadow:inset 0 0 17px #fb718522,0 0 8px #fb718522}
+#centers table td:first-child{color:#a5f3fc;text-shadow:0 0 8px #22d3ee66;font-weight:850}
+#centers table td:last-child{color:#ddd6fe;font-variant-numeric:tabular-nums}
+@keyframes tableHeaderTravel{0%{background-position:0% 50%;filter:hue-rotate(0)}100%{background-position:260% 50%;filter:hue-rotate(22deg)}}
+@keyframes rowArrive{from{opacity:0;transform:translateY(9px);filter:blur(2px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes cellRainbow{0%{background-position:0% 50%;filter:hue-rotate(0)}100%{background-position:100% 50%;filter:hue-rotate(45deg)}}
+@keyframes matrixTwinkle{0%{box-shadow:inset 0 0 5px #22d3ee09;filter:brightness(.92)}100%{box-shadow:inset 0 0 12px #a78bfa20;filter:brightness(1.12)}}
+@keyframes activeGlow{from{box-shadow:0 0 4px #14b8a633}to{box-shadow:0 0 16px #14b8a699,0 0 24px #22d3ee33}}
+@keyframes dangerGlow{from{box-shadow:0 0 5px #fb718544}to{box-shadow:0 0 18px #fb7185dd,0 0 25px #e11d4855}}
+@keyframes failureFlash{from{filter:brightness(.94)}to{filter:brightness(1.18)}}
+@media(prefers-reduced-motion:reduce){#centers table tbody tr,#links tbody tr,#matrix table td,#links .good,#links .bad{animation:none!important}}
+
+@media(max-width:800px){.span4,.span6,.span8{grid-column:span 12}.statgrid{grid-template-columns:repeat(2,1fr)}}
+
+/* FINAL TABLE POLISH: replace the unwanted white/blue stripes with a unified neon control-room look */
+#centers, #links{
+  border-radius:16px!important;
+  padding:10px!important;
+  background:radial-gradient(ellipse at 10% 0%,#172b55 0%,#0b1228 58%,#10102d 100%)!important;
+  border:1px solid #394b91!important;
+  box-shadow:inset 0 0 24px #312e8144,0 0 18px #06b6d422!important;
+  overflow:auto;
+}
+#centers table,#links table{
+  background:transparent!important;
+  border-collapse:separate!important;
+  border-spacing:0 6px!important;
+  padding:3px!important;
+}
+#centers table thead th,#centers table tr:first-child th,
+#links table thead th{
+  color:#f4fbff!important;
+  background:linear-gradient(110deg,#17406a,#343078,#592d78,#17406a)!important;
+  background-size:250% 100%!important;
+  border-top:1px solid #4deaff!important;
+  border-bottom:1px solid #c084fc!important;
+  text-shadow:0 0 10px #67e8f9aa!important;
+  box-shadow:inset 0 0 14px #38bdf822,0 0 12px #8b5cf633!important;
+  animation:tableHeaderTravel 6s linear infinite!important;
+  white-space:nowrap;
+}
+#centers table tbody td,#links table tbody td{
+  color:#e7f0ff!important;
+  background:linear-gradient(110deg,#101d3a,#172447 48%,#20183d)!important;
+  border-top:1px solid #344b83!important;
+  border-bottom:1px solid #344b83!important;
+  box-shadow:inset 0 1px 0 #ffffff0a!important;
+  transition:background .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease!important;
+}
+#centers table tbody tr:nth-child(even) td,#links table tbody tr:nth-child(even) td{
+  background:linear-gradient(110deg,#14213e,#162e48 48%,#2a1c4b)!important;
+}
+#centers table tbody td:first-child,#links table tbody td:first-child{
+  border-left:3px solid #22d3ee!important;
+  border-radius:9px 0 0 9px!important;
+  color:#8ff4ff!important;
+  font-weight:800!important;
+}
+#centers table tbody td:last-child,#links table tbody td:last-child{
+  border-right:1px solid #8b5cf6!important;
+  border-radius:0 9px 9px 0!important;
+}
+#centers table tbody tr:hover td,#links table tbody tr:hover td{
+  color:#fff!important;
+  background:linear-gradient(105deg,#075985,#3730a3,#701a75,#075985)!important;
+  background-size:250% 100%!important;
+  border-top-color:#67e8f9!important;
+  border-bottom-color:#c084fc!important;
+  box-shadow:0 0 13px #22d3ee55,inset 0 0 16px #c084fc22!important;
+  animation:tableHeaderTravel 2.4s linear infinite!important;
+}
+#links table tbody tr:has(.bad) td{
+  color:#ffe4ec!important;
+  background:linear-gradient(100deg,#42152c,#2b1736,#30162c)!important;
+  border-top-color:#fb7185!important;
+  border-bottom-color:#fb7185!important;
+  box-shadow:inset 0 0 14px #fb71851c!important;
+}
+#links table tbody tr:has(.bad):hover td{
+  background:linear-gradient(100deg,#701a35,#491b50,#701a35)!important;
+}
+#links .good{
+  color:#99ffe6!important;background:linear-gradient(120deg,#064e46,#065f55)!important;
+  border:1px solid #2dd4bf!important;box-shadow:0 0 12px #2dd4bf55!important;
+}
+#links .bad{
+  color:#ffe4ec!important;background:linear-gradient(120deg,#881337,#4c1d45)!important;
+  border:1px solid #fb7185!important;box-shadow:0 0 14px #fb718577!important;
+}
+@keyframes tableHeaderTravel{to{background-position:250% 0}}
+@media(prefers-reduced-motion:reduce){#centers table *,#links table *{animation:none!important}}
+
+/* REFINED MOBILE-FRIENDLY NEON TABLES — target the actual link table (tbody id=links) */
+section:has(> p.muted + div table:has(tbody#links)) > div[style*="overflow"]{
+  overflow-x:auto!important; overflow-y:hidden!important; max-width:100%;
+  padding:4px 3px 12px; border-radius:14px;
+  scrollbar-color:#38bdf8 #101a36; scrollbar-width:thin;
+  background:radial-gradient(ellipse at 50% 0%,#14264a88,transparent 72%);
+}
+table:has(> thead + tbody#links){
+  width:100%; min-width:610px; table-layout:auto; border-spacing:0 7px!important;
+}
+table:has(> thead + tbody#links) thead th{
+  padding:13px 12px!important; color:#bff7ff!important;
+  background:linear-gradient(115deg,#11224b,#164e63,#373078,#501b58,#11224b)!important;
+  background-size:300% 100%!important; animation:tableHeaderTravel 7s linear infinite!important;
+  border-top:1px solid #45e7ff!important;border-bottom:1px solid #a78bfa!important;
+  text-shadow:0 0 10px #22d3ee88!important; letter-spacing:.08em;
+}
+table:has(> thead + tbody#links) tbody#links tr td{
+  padding:12px!important; white-space:nowrap; color:#e8f4ff!important;
+  background:linear-gradient(110deg,#0b1730,#11294a 48%,#21183d)!important;
+  border-top:1px solid #2dd4bf66!important;border-bottom:1px solid #8b5cf666!important;
+  box-shadow:inset 0 1px 0 #ffffff0a!important;
+  transition:background .3s,box-shadow .3s,border-color .3s,transform .3s!important;
+}
+table:has(> thead + tbody#links) tbody#links tr:nth-child(even) td{
+  background:linear-gradient(110deg,#15143a,#112c4a 52%,#30204e)!important;
+}
+table:has(> thead + tbody#links) tbody#links tr td:first-child{
+  border-left:3px solid #22d3ee!important;border-radius:10px 0 0 10px!important;
+  color:#67e8f9!important;font-weight:900!important;text-shadow:0 0 8px #22d3ee55;
+}
+table:has(> thead + tbody#links) tbody#links tr td:last-child{
+  border-right:1px solid #a78bfa!important;border-radius:0 10px 10px 0!important;
+}
+table:has(> thead + tbody#links) tbody#links tr:hover td{
+  background:linear-gradient(105deg,#075985,#3730a3,#6b216e,#075985)!important;
+  background-size:260% 100%!important;animation:cellRainbow 1.8s linear infinite alternate!important;
+  border-color:#67e8f9!important;box-shadow:0 0 15px #22d3ee55,inset 0 0 15px #c084fc22!important;
+}
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(2) code,
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(3) code{
+  display:inline-block;min-width:46px;text-align:center;padding:5px 10px;border-radius:10px;
+  color:#7dd3fc!important;background:linear-gradient(135deg,#142b58,#24204d)!important;
+  border:1px solid #38bdf8!important;box-shadow:0 0 9px #38bdf833;
+}
+table:has(> thead + tbody#links) tbody#links .good,
+table:has(> thead + tbody#links) tbody#links .bad{
+  display:inline-flex;align-items:center;justify-content:center;min-width:66px;
+  padding:5px 11px;border-radius:999px;font-size:11px;font-weight:850;letter-spacing:.03em;
+}
+table:has(> thead + tbody#links) tbody#links .good{
+  color:#7affdc!important;background:linear-gradient(120deg,#063d3b,#075b55)!important;
+  border:1px solid #2dd4bf!important;box-shadow:0 0 10px #14b8a644;animation:activeGlow 2.4s ease-in-out infinite alternate;
+}
+table:has(> thead + tbody#links) tbody#links .bad{
+  color:#ffe4ec!important;background:linear-gradient(120deg,#56152d,#7f1d4b)!important;
+  border:1px solid #fb7185!important;box-shadow:0 0 13px #fb718566;animation:dangerGlow 1s ease-in-out infinite alternate;
+}
+/* Eccentricity ranking: polished neon rails and a clear highlighted center */
+#centers{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#38bdf8 #101a36}
+#centers table{width:100%;min-width:310px}
+#centers table tbody td{padding:10px 9px!important}
+#centers table tbody tr:first-child td{background:linear-gradient(110deg,#064e3b,#123e55,#172554)!important;border-color:#34d399!important;box-shadow:inset 0 0 14px #34d39918,0 0 9px #10b98122!important}
+#centers table tbody tr:first-child td:first-child{color:#a7f3d0!important;border-left-color:#34d399!important}
+#centers progress,#centers .bar,#centers [role="progressbar"]{accent-color:#22d3ee}
+@media(max-width:600px){
+ table:has(> thead + tbody#links){min-width:610px}
+ table:has(> thead + tbody#links) thead th,table:has(> thead + tbody#links) tbody#links td{padding:10px 9px!important}
+ #centers table{font-size:12px}
+}
+
+
+/* USER REQUEST: warm, vivid orange/coral/gold tables; compact inventory. Only table styling changes. */
+#centers, #links{
+  background:radial-gradient(ellipse at 12% 0%,#3b1b12 0%,#17101a 54%,#100d18 100%)!important;
+  border-color:#fb923c!important;
+  box-shadow:inset 0 0 24px #f9731622,0 0 18px #f9731630!important;
+}
+#centers table thead th,#centers table tr:first-child th,
+#links table thead th,
+table:has(> thead + tbody#links) thead th{
+  color:#fff7ed!important;
+  background:linear-gradient(110deg,#7c2d12,#c2410c,#9d174d,#ea580c,#7c2d12)!important;
+  background-size:300% 100%!important;
+  border-top:1px solid #fdba74!important;
+  border-bottom:1px solid #f9a8d4!important;
+  text-shadow:0 0 9px #fb923caa!important;
+  box-shadow:inset 0 0 12px #fb923c22,0 0 12px #f9731644!important;
+  animation:hotHeaderFlow 5s linear infinite!important;
+}
+#centers table tbody td,#links table tbody td,
+table:has(> thead + tbody#links) tbody#links tr td{
+  color:#fff1df!important;
+  background:linear-gradient(110deg,#24151a,#3a1c1c 48%,#3b2114)!important;
+  border-top:1px solid #f9731677!important;
+  border-bottom:1px solid #fb923c77!important;
+  box-shadow:inset 0 1px 0 #fff7ed0b!important;
+}
+#centers table tbody tr:nth-child(even) td,#links table tbody tr:nth-child(even) td,
+table:has(> thead + tbody#links) tbody#links tr:nth-child(even) td{
+  background:linear-gradient(110deg,#30151c,#4a1d1b 48%,#45200f)!important;
+}
+#centers table tbody td:first-child,#links table tbody td:first-child,
+table:has(> thead + tbody#links) tbody#links tr td:first-child{
+  border-left:3px solid #fb923c!important;
+  color:#fdba74!important;
+  text-shadow:0 0 8px #f9731644!important;
+}
+#centers table tbody td:last-child,#links table tbody td:last-child,
+table:has(> thead + tbody#links) tbody#links tr td:last-child{
+  border-right:1px solid #f472b6!important;
+}
+#centers table tbody tr:hover td,#links table tbody tr:hover td,
+table:has(> thead + tbody#links) tbody#links tr:hover td{
+  color:#fff!important;
+  background:linear-gradient(105deg,#9a3412,#c2410c,#9d174d,#ea580c)!important;
+  background-size:260% 100%!important;
+  border-color:#fed7aa!important;
+  box-shadow:0 0 13px #fb923c66,inset 0 0 15px #fda4af22!important;
+  animation:hotHeaderFlow 1.8s linear infinite!important;
+}
+#centers table tbody tr:first-child td{
+  background:linear-gradient(110deg,#78350f,#9a3412,#831843)!important;
+  border-color:#fbbf24!important;
+  box-shadow:inset 0 0 14px #fbbf2422,0 0 10px #f9731633!important;
+}
+#centers table tbody tr:first-child td:first-child{color:#fef3c7!important;border-left-color:#fbbf24!important}
+#links .good{
+  color:#d9f99d!important;background:linear-gradient(120deg,#365314,#3f6212)!important;
+  border:1px solid #a3e635!important;box-shadow:0 0 10px #a3e63544!important;
+}
+#links .bad{
+  color:#fff1f2!important;background:linear-gradient(120deg,#881337,#9f1239)!important;
+  border:1px solid #fb7185!important;box-shadow:0 0 13px #fb718566!important;
+}
+/* Compact link inventory: less tall rows, smaller text and tighter spacing */
+table:has(> thead + tbody#links){
+  min-width:560px!important;
+  border-spacing:0 3px!important;
+  font-size:12px!important;
+}
+table:has(> thead + tbody#links) thead th{
+  padding:8px 9px!important;font-size:10px!important;
+}
+table:has(> thead + tbody#links) tbody#links tr td{
+  padding:7px 9px!important;
+  line-height:1.25!important;
+}
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(2) code,
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(3) code{
+  min-width:38px!important;padding:3px 7px!important;border-radius:8px!important;
+  color:#fed7aa!important;background:linear-gradient(135deg,#431407,#7c2d12)!important;
+  border:1px solid #fb923c!important;box-shadow:0 0 8px #f9731633!important;
+}
+#centers table{font-size:12px!important;border-spacing:0 4px!important}
+#centers table th,#centers table td{padding:8px 9px!important}
+@keyframes hotHeaderFlow{0%{background-position:0% 50%;filter:saturate(1)}100%{background-position:300% 50%;filter:saturate(1.35)}}
+@media(prefers-reduced-motion:reduce){#centers table *,#links table *{animation:none!important}}
+
+
+/* FINAL USER POLISH: vivid pink / magenta tables with readable headings. Only table-related styling. */
+section.panel:has(#centers) h3,
+section.panel:has(#links) h3,
+.panel:has(#centers) h3,
+.panel:has(#links) h3{
+  color:#ffe7f7!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#ffe7f7!important;
+  text-shadow:0 0 5px #ff4fc8,0 0 14px #e879f955!important;
+  font-weight:850!important;
+  letter-spacing:.015em!important;
+}
+#centers,#links{
+  background:radial-gradient(ellipse at 12% 0%,#42143a 0%,#1b1027 54%,#100d20 100%)!important;
+  border-color:#f472d0!important;
+  box-shadow:inset 0 0 24px #ec489922,0 0 20px #db277733!important;
+}
+#centers table thead th,#centers table tr:first-child th,
+#links table thead th,
+table:has(> thead + tbody#links) thead th{
+  color:#fff7fd!important;
+  -webkit-text-fill-color:#fff7fd!important;
+  background:linear-gradient(110deg,#831843,#be185d,#7e22ce,#db2777,#831843)!important;
+  background-size:300% 100%!important;
+  border-top:1px solid #f9a8d4!important;
+  border-bottom:1px solid #c4b5fd!important;
+  text-shadow:0 0 7px #fff,0 0 13px #f472d0!important;
+  box-shadow:inset 0 0 13px #f9a8d422,0 0 13px #db277744!important;
+  animation:pinkHeaderFlow 5s linear infinite!important;
+  font-weight:900!important;
+  opacity:1!important;
+}
+#centers table tbody td,#links table tbody td,
+table:has(> thead + tbody#links) tbody#links tr td{
+  color:#fff0fa!important;
+  -webkit-text-fill-color:#fff0fa!important;
+  background:linear-gradient(110deg,#241027,#39143b 48%,#2b1742)!important;
+  border-top:1px solid #ec489988!important;
+  border-bottom:1px solid #a855f788!important;
+  box-shadow:inset 0 1px 0 #fff7ff12!important;
+}
+#centers table tbody tr:nth-child(even) td,#links table tbody tr:nth-child(even) td,
+table:has(> thead + tbody#links) tbody#links tr:nth-child(even) td{
+  background:linear-gradient(110deg,#32102d,#4a1647 48%,#35184f)!important;
+}
+#centers table tbody td:first-child,#links table tbody td:first-child,
+table:has(> thead + tbody#links) tbody#links tr td:first-child{
+  border-left:3px solid #fb70d4!important;
+  color:#ffb8e8!important;
+  -webkit-text-fill-color:#ffb8e8!important;
+  text-shadow:0 0 8px #ec489966!important;
+}
+#centers table tbody td:last-child,#links table tbody td:last-child,
+table:has(> thead + tbody#links) tbody#links tr td:last-child{
+  border-right:1px solid #c084fc!important;
+}
+#centers table tbody tr:hover td,#links table tbody tr:hover td,
+table:has(> thead + tbody#links) tbody#links tr:hover td{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  background:linear-gradient(105deg,#9d174d,#c026d3,#6d28d9,#db2777)!important;
+  background-size:260% 100%!important;
+  border-color:#fbcfe8!important;
+  box-shadow:0 0 13px #f472d088,inset 0 0 15px #f9a8d433!important;
+  animation:pinkHeaderFlow 1.8s linear infinite!important;
+}
+#centers table tbody tr:first-child td{
+  background:linear-gradient(110deg,#701a75,#9d174d,#6b21a8)!important;
+  border-color:#f0abfc!important;
+  color:#fff7ff!important;
+  -webkit-text-fill-color:#fff7ff!important;
+  box-shadow:inset 0 0 14px #f0abfc22,0 0 11px #e879f944!important;
+}
+#centers table tbody tr:first-child td:first-child{color:#fff7ff!important;-webkit-text-fill-color:#fff7ff!important;border-left-color:#f0abfc!important}
+#links .good{
+  color:#d1fae5!important;-webkit-text-fill-color:#d1fae5!important;
+  background:linear-gradient(120deg,#064e3b,#047857)!important;
+  border:1px solid #6ee7b7!important;box-shadow:0 0 11px #34d39966!important;
+}
+#links .bad{
+  color:#fff1f2!important;-webkit-text-fill-color:#fff1f2!important;
+  background:linear-gradient(120deg,#881337,#9d174d)!important;
+  border:1px solid #fda4af!important;box-shadow:0 0 14px #fb718577!important;
+}
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(2) code,
+table:has(> thead + tbody#links) tbody#links tr td:nth-child(3) code{
+  color:#fce7f3!important;-webkit-text-fill-color:#fce7f3!important;
+  background:linear-gradient(135deg,#4a1647,#701a75)!important;
+  border:1px solid #f472d0!important;box-shadow:0 0 9px #e879f944!important;
+}
+@keyframes pinkHeaderFlow{0%{background-position:0% 50%;filter:saturate(1)}100%{background-position:300% 50%;filter:saturate(1.45)}}
+@media(prefers-reduced-motion:reduce){#centers table *,#links table *{animation:none!important}}
+
+</style></head><body>
+<header><h1>Optical Data Center Routing Optimizer</h1><p>Interactive optical data-center network simulator for route selection, latency comparison and link-failure testing.</p></header>
+<main>
+<div class="notice"><b>Live simulation:</b> Select servers, calculate routes, or disable a link to test rerouting. Values are sample simulation data.</div>
+<div class="grid">
+<section class="panel span4"><h2>1. Choose a route</h2><div class="row"><div><label>Source node</label><select id="src"></select></div><div><label>Destination node</label><select id="dst"></select></div></div><div class="row"><div><label>Equipment delay per link (μs)</label><input id="equip" type="number" min="0" value="2" step="0.5"></div></div><div class="row"><button id="routeBtn">Calculate routes</button><button class="secondary" id="resetBtn">Reset scenario</button></div><div id="routeResult" class="result">Choose endpoints and calculate.</div><h3>Link failure simulation</h3><div><label>Select one or more optical links to fail</label><div id="failureOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;max-height:190px;overflow:auto;padding:8px;border:1px solid var(--line);border-radius:10px"></div></div><div class="row"><button class="danger" id="failBtn">Apply selected failures</button><button class="secondary" id="clearFailBtn">Clear failures</button></div><p class="muted">Select multiple links to simulate simultaneous failures. Failed links are excluded from routing.</p></section>
+<section class="panel span8"><h2>2. Sample optical data-center topology</h2><svg id="network" viewBox="0 0 760 360" role="img" aria-label="Data center network graph"></svg><div class="legend"><span><i class="dot" style="background:#2459d3"></i>Core switch</span><span><i class="dot" style="background:#078779"></i>Aggregation switch</span><span><i class="dot" style="background:#d18b19"></i>Top-of-rack switch</span><span><i class="dot" style="background:#8b98aa"></i>Server</span><span>Line label = fiber length (km)</span></div></section>
+<section class="panel span12"><h2>3. Topological distance-index analysis</h2><div class="statgrid" id="stats"></div><p class="muted">Calculated automatically from the current network and active links.</p><div class="grid"><div class="span6"><h3>Node eccentricity and Jordan center</h3><div id="centers"></div></div><div class="span6"><h3>All-pairs shortest-distance matrix (μs)</h3><div id="matrix" style="overflow:auto;max-height:280px"></div></div></div></section>
+<section class="panel span12"><h2>4. Link inventory</h2><p class="muted">Current link values and status. Failed links are excluded from route calculations.</p><div style="overflow:auto"><table><thead><tr><th>Link</th><th>From</th><th>To</th><th>Fiber length (km)</th><th>Estimated cost (μs)</th><th>Status</th></tr></thead><tbody id="links"></tbody></table></div></section>
+
+</div></main>
+<script>
+const originalNodes=[
+{id:"C1",type:"Core",x:250,y:45},{id:"C2",type:"Core",x:510,y:45},
+{id:"A1",type:"Aggregation",x:170,y:135},{id:"A2",type:"Aggregation",x:330,y:135},{id:"A3",type:"Aggregation",x:430,y:135},{id:"A4",type:"Aggregation",x:590,y:135},
+{id:"T1",type:"ToR",x:110,y:225},{id:"T2",type:"ToR",x:260,y:225},{id:"T3",type:"ToR",x:500,y:225},{id:"T4",type:"ToR",x:650,y:225},
+{id:"S1",type:"Server",x:70,y:315},{id:"S2",type:"Server",x:150,y:315},{id:"S3",type:"Server",x:220,y:315},{id:"S4",type:"Server",x:300,y:315},{id:"S5",type:"Server",x:460,y:315},{id:"S6",type:"Server",x:540,y:315},{id:"S7",type:"Server",x:610,y:315},{id:"S8",type:"Server",x:690,y:315}];
+const originalEdges=[
+["C1","A1",1.2],["C1","A2",1.8],["C2","A3",1.1],["C2","A4",1.5],["C1","A3",2.4],["C2","A2",2.1],
+["A1","T1",0.35],["A2","T1",0.5],["A1","T2",0.45],["A2","T2",0.3],["A3","T3",0.4],["A4","T3",0.55],["A3","T4",0.3],["A4","T4",0.42],
+["T1","S1",0.08],["T1","S2",0.1],["T2","S3",0.07],["T2","S4",0.09],["T3","S5",0.08],["T3","S6",0.11],["T4","S7",0.06],["T4","S8",0.1]];
+let nodes=JSON.parse(JSON.stringify(originalNodes)), edges=originalEdges.map((e,i)=>({id:"L"+(i+1),a:e[0],b:e[1],km:e[2]})), failed=new Set(), last=null;
+const $=id=>document.getElementById(id);
+function cost(e){return e.km*5+Math.max(0,Number($("equip").value)||0)}
+function makeAdj(weighted=true){let n=nodes.length, d=Array.from({length:n},()=>Array(n).fill(Infinity)), next=Array.from({length:n},()=>Array(n).fill(-1));nodes.forEach((v,i)=>{d[i][i]=0;next[i][i]=i});edges.forEach(e=>{if(failed.has(e.id))return;let i=nodes.findIndex(v=>v.id===e.a),j=nodes.findIndex(v=>v.id===e.b),w=weighted?cost(e):1;if(w<d[i][j]){d[i][j]=d[j][i]=w;next[i][j]=j;next[j][i]=i}});return{d,next}}
+function floyd(weighted=true){let {d,next}=makeAdj(weighted),n=nodes.length;for(let k=0;k<n;k++)for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(d[i][k]+d[k][j]<d[i][j]){d[i][j]=d[i][k]+d[k][j];next[i][j]=next[i][k]}return{d,next}}
+function path(res,s,t){let i=nodes.findIndex(n=>n.id===s),j=nodes.findIndex(n=>n.id===t);if(res.next[i][j]===-1||!isFinite(res.d[i][j]))return null;let arr=[s],guard=0;while(i!==j&&guard++<nodes.length+1){i=res.next[i][j];arr.push(nodes[i].id)}return arr}
+function fmt(x){return isFinite(x)?x.toFixed(2):"∞"}
+function calc(){let weighted=floyd(true),hops=floyd(false),s=$("src").value,t=$("dst").value,wp=path(weighted,s,t),hp=path(hops,s,t);last=weighted;
+let routeHTML=wp?`<b>Metric / latency-aware route</b><br>${wp.join(" → ")}<br>Estimated cost: <b>${fmt(weighted.d[nodes.findIndex(n=>n.id===s)][nodes.findIndex(n=>n.id===t)])} μs</b><br><br>`:`<span class="bad">No route available in this scenario.</span><br><br>`;
+routeHTML+=hp?`<b>Hop-count route</b><br>${hp.join(" → ")}<br>Hop count: <b>${hp.length-1}</b><br>Estimated latency of this route: <b>${fmt(routeCost(hp))} μs</b>`:"No hop-count route available.";
+if(wp&&hp)routeHTML+=`<br><br><span class="${routeCost(wp)<=routeCost(hp)+1e-8?'good':'bad'}">${routeCost(wp)<=routeCost(hp)+1e-8?'Weighted routing selects a route with no greater estimated cost.':'Check the route cost assumptions.'}</span>`;
+$("routeResult").innerHTML=routeHTML;renderAnalysis(weighted);renderGraph(wp);renderLinks()}
+function routeCost(p){let total=0;for(let i=0;i<p.length-1;i++){let e=edges.find(e=>(e.a===p[i]&&e.b===p[i+1])||(e.a===p[i+1]&&e.b===p[i]));if(e)total+=cost(e)}return total}
+function renderAnalysis(r){let sum=0,har=0,pairs=0;for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){if(isFinite(r.d[i][j])){sum+=r.d[i][j];if(r.d[i][j]>0)har+=1/r.d[i][j];pairs++}}
+let ecc=nodes.map((n,i)=>({id:n.id,e:Math.max(...r.d[i])})),connected=pairs===nodes.length*(nodes.length-1)/2,cent=Math.min(...ecc.map(x=>x.e));
+$("stats").innerHTML=[["Nodes",nodes.length],["Active links",edges.length-failed.size],["Wiener index",connected?fmt(sum):"Disconnected"],["Harary index",connected?fmt(har):"Disconnected"]].map(x=>`<div class="stat"><small>${x[0]}</small><strong>${x[1]}</strong></div>`).join("");
+$("centers").innerHTML=connected?`<p>Jordan center (minimum eccentricity): <b>${ecc.filter(x=>Math.abs(x.e-cent)<1e-7).map(x=>x.id).join(", ")}</b></p><table><tr><th>Node</th><th>Eccentricity (μs)</th></tr>${ecc.sort((a,b)=>a.e-b.e).map(x=>`<tr><td>${x.id}</td><td>${fmt(x.e)}</td></tr>`).join("")}</table>`:`<p class="bad">Graph is disconnected. Eccentricity and indices need component-aware interpretation.</p>`;
+$("matrix").innerHTML=`<table><tr><th></th>${nodes.map(n=>`<th>${n.id}</th>`).join("")}</tr>${r.d.map((row,i)=>`<tr><th>${nodes[i].id}</th>${row.map(x=>`<td>${fmt(x)}</td>`).join("")}</tr>`).join("")}</table>`}
+function renderGraph(route=[]){let svg=$("network"),pos=Object.fromEntries(nodes.map(n=>[n.id,n]));let routeSet=new Set();for(let i=0;i<route.length-1;i++)routeSet.add([route[i],route[i+1]].sort().join("-"));
+let out="";edges.forEach(e=>{let a=pos[e.a],b=pos[e.b],off=failed.has(e.id);let key=[e.a,e.b].sort().join("-"),hi=routeSet.has(key);out+=`<line class="edge ${hi?'route-link':''} ${off?'failed-link':''}" data-link="${e.id}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${off?'#fb7185':hi?'#34f5c5':'#506587'}" stroke-width="${hi?4:1.8}" stroke-dasharray="${off?'5 4':'none'}"/>`;let mx=(a.x+b.x)/2,my=(a.y+b.y)/2;out+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="#d5e6ff" paint-order="stroke" stroke="#081329" stroke-width="3">${e.km}km</text>`});
+nodes.forEach(n=>{let col=n.type==="Core"?"#4f83ff":n.type==="Aggregation"?"#22d3c5":n.type==="ToR"?"#fbbf24":"#a7b5cc",rad=n.type==="Server"?9:13;out+=`<g class="node" data-node="${n.id}"><circle cx="${n.x}" cy="${n.y}" r="${rad+5}" fill="${col}" opacity=".12"><animate attributeName="r" values="${rad+3};${rad+8};${rad+3}" dur="2.4s" repeatCount="indefinite"/></circle><circle cx="${n.x}" cy="${n.y}" r="${rad}" fill="${col}" stroke="#e0f2fe" stroke-width="1.8"/><text class="node-label" x="${n.x}" y="${n.y+rad+13}" font-size="11" text-anchor="middle" fill="#f0f7ff">${n.id}</text></g>`});svg.innerHTML=out;enableNodeDragging(svg);enableEdgeClick(svg)}
+function enableNodeDragging(svg){let active=null,moved=false,start=null,origin=null;svg.querySelectorAll('.node').forEach(g=>{g.addEventListener('pointerdown',ev=>{active=g;start={x:ev.clientX,y:ev.clientY};origin={x:nodes.find(n=>n.id===g.dataset.node).x,y:nodes.find(n=>n.id===g.dataset.node).y};moved=false;g.setPointerCapture?.(ev.pointerId)});g.addEventListener('pointermove',ev=>{if(!active||active!==g||!start||!origin)return;if(Math.hypot(ev.clientX-start.x,ev.clientY-start.y)>4)moved=true;if(!moved)return;let pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;let p=pt.matrixTransform(svg.getScreenCTM().inverse()),sp=svg.createSVGPoint();sp.x=start.x;sp.y=start.y;let p0=sp.matrixTransform(svg.getScreenCTM().inverse()),dx=p.x-p0.x,dy=p.y-p0.y,n=nodes.find(x=>x.id===g.dataset.node);n.x=Math.max(25,Math.min(735,origin.x+dx));n.y=Math.max(25,Math.min(335,origin.y+dy));let ox=n.x,oy=n.y;g.querySelectorAll('circle').forEach(c=>{c.setAttribute('cx',ox);c.setAttribute('cy',oy)});let tx=g.querySelector('text');tx.setAttribute('x',ox);tx.setAttribute('y',oy+(n.type==='Server'?22:26));edges.forEach(e=>{let l=svg.querySelector(`[data-link="${e.id}"]`),na=nodes.find(z=>z.id===e.a),nb=nodes.find(z=>z.id===e.b);l.setAttribute('x1',na.x);l.setAttribute('y1',na.y);l.setAttribute('x2',nb.x);l.setAttribute('y2',nb.y);let labels=svg.querySelectorAll('text:not(.node-label)');let label=[...labels].find(t=>{let x=(na.x+nb.x)/2,y=(na.y+nb.y)/2;return Math.abs(Number(t.getAttribute('x'))-x)<0.1&&Math.abs(Number(t.getAttribute('y'))-(y-4))<0.1});if(label){label.setAttribute('x',(na.x+nb.x)/2);label.setAttribute('y',(na.y+nb.y)/2-4)}})});g.addEventListener('pointerup',()=>{if(active===g){if(!moved){let id=g.dataset.node;if(!$('src').dataset.nodePick||$('src').dataset.nodePick==='dst'){$('src').value=id;$('src').dataset.nodePick='src';$('routeResult').innerHTML=`Source selected: <b>${id}</b>. Now tap another node to set destination.`}else{$('dst').value=id;$('src').dataset.nodePick='dst';calc()}}else calc();active=null;start=null;origin=null}})})}
+function enableEdgeClick(svg){svg.querySelectorAll('.edge').forEach(line=>line.addEventListener('click',()=>{let id=line.dataset.link;if(failed.has(id))failed.delete(id);else failed.add(id);document.querySelectorAll('.failureCheck').forEach(c=>c.checked=failed.has(c.value));calc()}))}
+function renderLinks(){$("links").innerHTML=edges.map(e=>`<tr><td>${e.id}</td><td>${e.a}</td><td>${e.b}</td><td>${e.km.toFixed(2)}</td><td>${fmt(cost(e))}</td><td>${failed.has(e.id)?'<span class="bad">FAILED</span>':'<span class="good">Active</span>'}</td></tr>`).join("")}
+function fillSelects(){let options=nodes.map(n=>`<option value="${n.id}">${n.id} — ${n.type}</option>`).join("");$("src").innerHTML=options;$("dst").innerHTML=options;$("src").value="S1";$("dst").value="S8";$("failureOptions").innerHTML=edges.map(e=>`<label style="display:flex;gap:7px;align-items:center;margin:0;color:var(--ink);font-size:12px"><input type="checkbox" value="${e.id}" class="failureCheck" style="min-width:auto">${e.id}: ${e.a}–${e.b}</label>`).join("")}
+$("routeBtn").onclick=calc;$("equip").onchange=calc;$("src").onchange=calc;$("dst").onchange=calc;
+$("failBtn").onclick=()=>{failed=new Set([...document.querySelectorAll(".failureCheck:checked")].map(x=>x.value));calc()};$("clearFailBtn").onclick=()=>{failed.clear();document.querySelectorAll(".failureCheck").forEach(x=>x.checked=false);calc()};$("resetBtn").onclick=()=>{failed.clear();document.querySelectorAll(".failureCheck").forEach(x=>x.checked=false);$("equip").value=2;$("src").value="S1";$("dst").value="S8";calc()};
+fillSelects();calc();
+</script></body></html>
